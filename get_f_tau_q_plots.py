@@ -1,9 +1,22 @@
 def ftauq_sub(x,ot,l,m):
+    
+'''
+    x =   array of values for spin of remnant BH
+          ex: np.arange(0,1,.01)
+          
+    ot =  array of values for desired overtones for each QNM
+          ex: np.arange(0,5,1)
+          
+    l,m = desired mode
+    
+'''
     fig,ax=plt.subplots(1,3, figsize=(18,5),sharex=False, sharey=False)
-    for overtones in ot: # loop through various overtones to get 3 values (f*tau,tau/tau)
+    # loop through various overtones
+    for overtones in ot:
         ftau = []
         tau_tau = []
         q_factor = []
+        # nested loop for chi values
         for chi in x:
             f = ringdown.qnms.get_ftau(1,chi,overtones,l,m)
             f0 = f[0]*T_MSUN
@@ -14,6 +27,7 @@ def ftauq_sub(x,ot,l,m):
             q = ringdown.qnms.get_ftau(1,chi,overtones,l,m)
             q0 = q[0]*q[1]*math.pi
             q_factor.append(q0)
+        # plotting
         ax[0].plot(x,ftau,label=f'n = ${{{overtones}}}$')
         ax[0].tick_params(labelsize=20)
         ax[1].plot(x,tau_tau,label=f'n = ${{{overtones}}}$')

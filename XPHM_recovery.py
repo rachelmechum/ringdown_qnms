@@ -7,7 +7,7 @@ def rd_fun(modes=[(2,2,0),(2,2,1)]):
         l,m,n = mode
         func_signature+= f",a{l}{m}{n},phi{l}{m}{n}"
     func_signature+=")"
-    # kwargs = a220, phi220, a221, phi221, ...
+    # where kwargs = a220, phi220, a221, phi221, ...
     def new_fun(time,M,chi,**kwargs):
         # creating empty time array to hold rngdwn() return
         ex = np.zeros(time.shape)
@@ -18,7 +18,6 @@ def rd_fun(modes=[(2,2,0),(2,2,1)]):
             phi=kwargs[f"phi{l}{m}{n}"]
             # add back to empty time array  
             ex += rngdwn(time,M,chi,l,m,n,amplitude,phi)
-            #print(time,M,chi,kwargs)
         # return ex to have combined signal for all defined modes
         return ex
     # this fx now looks like what scipy.curve_fit expects...
@@ -39,20 +38,33 @@ def rngdwn(time,M,chi,l,m,n,amplitude,phi):
     ftau = ringdown.qnms.get_ftau(M,chi,n,l,m)
     gamma = (ftau[1])**-1
     t0=0
-        
+    
+    # creat dict of values
     wf_kws = dict(
     A = amplitude,
     phi = phi,
     f = ftau[0],                                                            
     gamma = gamma,                                                          
     )
-    # generate sinusoid
+    
+    # generate sinusoid and save data as ringdown.Data object
     s = amplitude*np.cos(2*np.pi*ftau[0]*(time-t0) + phi)*np.exp(-gamma*abs(time-t0))
     return ringdown.Data(s, index=time)
 
 #---------------------------------------------------------------------------------------------------------------------------------
 
 def plot_ringdown(x0,xdata,ydata,p0,bounds,approx):  
+
+'''
+
+    x0     = 'test' with what is defined in rd_fun
+    xdata  = defined in XPringdown_plots function 
+    ydata  = defined in XPringdown_plots function
+    p0     = array of guess values for M,chi,amps,phi
+    bounds = array of upper and lower bounds for M,chi,amps,phi
+    approx = waveform approximant to use (here IMRPhenomXPHM)
+
+'''
 
     popt,pcov = curve_fit(x0,xdata,ydata,p0,bounds=bounds)
     
@@ -87,6 +99,27 @@ def plot_ringdown(x0,xdata,ydata,p0,bounds,approx):
 #---------------------------------------------------------------------------------------------------------------------------------
 
 def XPHMringdown_plots(mass1,mass2,spin1x,spin1y,spin1z,spin2x,spin2y,spin2z,first_t0,last_t0,time_step,x0,p0,bounds,approx):
+    
+'''
+
+    mass1     = mass of BH1
+    mass2     = mass of BH2
+    spin1x    = x-component of spin1
+    spin1y    = y-component of spin1
+    spin1z    = z-component of spin1
+    spin2x    = x-component of spin2
+    spin2y    = y-component of spin2
+    spin2z    = z-component of spin2
+    first_t0  = earliest start time of ringdown analysis
+    last_t0   = latest start time of ringdown anaylsis
+    time_step = time step between first_t0 and last_t0
+    x0        = 'test'
+    p0        = array of guess bounds for M,chi,amp,phi
+    bounds    = array of upper and lower bounds for M,chi,amp,phi
+    approx    = waveform approximant to use (here IMRPhenomXPHM)
+
+'''
+
     inclination = [0, np.pi/6, np.pi/3, np.pi/2]
     df_list=[]
     for i in inclination:        
